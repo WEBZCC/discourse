@@ -9,6 +9,15 @@ import getURL from "discourse-common/lib/get-url";
 import cookie from "discourse/lib/cookie";
 import I18n from "I18n";
 
+let _decorators = [];
+export function registerUserMenuTopicTitleDecorator(dec) {
+  _decorators.push(dec);
+}
+
+export function resetUserMenuTopicTitleDecorators() {
+  _decorators = [];
+}
+
 export default class UserMenuNotificationItem extends GlimmerComponent {
   get className() {
     const classes = [];
@@ -67,8 +76,7 @@ export default class UserMenuNotificationItem extends GlimmerComponent {
 
   get description() {
     const description =
-      emojiUnescape(this.notification.fancy_title) ||
-      this.notification.data.topic_title;
+      this._decoratedTopicTitle || this.notification.data.topic_title;
 
     if (this.descriptionHtmlSafe) {
       return htmlSafe(description);
@@ -94,6 +102,19 @@ export default class UserMenuNotificationItem extends GlimmerComponent {
 
   get notificationName() {
     return this.site.notificationLookup[this.notification.notification_type];
+  }
+
+  get _decoratedTopicTitle() {
+    let title = emojiUnescape(this.notification.fancy_title);
+    if (title) {
+      _decorators.forEach((dec) => {
+        const updated = dec(title, this.notification);
+        if (updated) {
+          title = updated;
+        }
+      });
+    }
+    return title;
   }
 
   @action

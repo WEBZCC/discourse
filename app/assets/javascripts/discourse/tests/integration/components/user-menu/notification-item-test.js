@@ -1,11 +1,18 @@
-import { module, test } from "qunit";
-import { setupRenderingTest } from "discourse/tests/helpers/component-test";
-import { exists, query } from "discourse/tests/helpers/qunit-helpers";
-import { render, settled } from "@ember/test-helpers";
+import componentTest, {
+  setupRenderingTest,
+} from "discourse/tests/helpers/component-test";
+import {
+  discourseModule,
+  exists,
+  query,
+  queryAll,
+} from "discourse/tests/helpers/qunit-helpers";
+import { settled } from "@ember/test-helpers";
 import { deepMerge } from "discourse-common/lib/object";
+import { withPluginApi } from "discourse/lib/plugin-api";
 import { NOTIFICATION_TYPES } from "discourse/tests/fixtures/concerns/notification-types";
 import Notification from "discourse/models/notification";
-import { hbs } from "ember-cli-htmlbars";
+import hbs from "htmlbars-inline-precompile";
 import I18n from "I18n";
 
 function getNotification(overrides = {}) {
@@ -35,164 +42,277 @@ function getNotification(overrides = {}) {
   );
 }
 
-module(
+discourseModule(
   "Integration | Component | user-menu | notification-item",
   function (hooks) {
     setupRenderingTest(hooks);
 
     const template = hbs`<UserMenu::NotificationItem @item={{this.notification}}/>`;
 
-    test("pushes `read` to the classList if the notification is read", async function (assert) {
-      this.set("notification", getNotification());
-      this.notification.read = false;
-      await render(template);
-      assert.ok(!exists("li.read"));
-      assert.ok(exists("li"));
+    componentTest(
+      "pushes `read` to the classList if the notification is read",
+      {
+        template,
 
-      this.notification.read = true;
-      await settled();
+        beforeEach() {
+          this.set("notification", getNotification());
+          this.notification.read = false;
+        },
 
-      assert.ok(
-        exists("li.read"),
-        "the item re-renders when the read property is updated"
-      );
+        async test(assert) {
+          assert.ok(!exists("li.read"));
+          assert.ok(exists("li"));
+
+          this.notification.read = true;
+          await settled();
+
+          assert.ok(
+            exists("li.read"),
+            "the item re-renders when the read property is updated"
+          );
+        },
+      }
+    );
+
+    componentTest("pushes the notification type name to the classList", {
+      template,
+
+      beforeEach() {
+        this.set("notification", getNotification());
+      },
+
+      async test(assert) {
+        let item = query("li");
+        assert.strictEqual(item.className, "mentioned");
+
+        this.set(
+          "notification",
+          getNotification({
+            notification_type: NOTIFICATION_TYPES.private_message,
+          })
+        );
+        await settled();
+
+        assert.ok(
+          exists("li.private-message"),
+          "replaces underscores in type name with dashes"
+        );
+      },
     });
 
-    test("pushes the notification type name to the classList", async function (assert) {
-      this.set("notification", getNotification());
-      await render(template);
-      let item = query("li");
-      assert.strictEqual(item.className, "mentioned");
+    componentTest(
+      "pushes is-warning to the classList if the notification originates from a warning PM",
+      {
+        template,
 
-      this.set(
-        "notification",
-        getNotification({
-          notification_type: NOTIFICATION_TYPES.private_message,
-        })
-      );
-      await settled();
+        beforeEach() {
+          this.set("notification", getNotification({ is_warning: true }));
+        },
 
-      assert.ok(
-        exists("li.private-message"),
-        "replaces underscores in type name with dashes"
-      );
+        async test(assert) {
+          assert.ok(exists("li.is-warning"));
+        },
+      }
+    );
+
+    componentTest(
+      "doesn't push is-warning to the classList if the notification doesn't originate from a warning PM",
+      {
+        template,
+
+        beforeEach() {
+          this.set("notification", getNotification());
+        },
+
+        async test(assert) {
+          assert.ok(!exists("li.is-warning"));
+          assert.ok(exists("li"));
+        },
+      }
+    );
+
+    componentTest(
+      "the item's href links to the topic that the notification originates from",
+      {
+        template,
+
+        beforeEach() {
+          this.set("notification", getNotification());
+        },
+
+        async test(assert) {
+          const link = query("li a");
+          assert.ok(link.href.endsWith("/t/this-is-fancy-title/449/113"));
+        },
+      }
+    );
+
+    componentTest(
+      "the item's href links to the group messages if the notification is for a group messages",
+      {
+        template,
+
+        beforeEach() {
+          this.set(
+            "notification",
+            getNotification({
+              topic_id: null,
+              post_number: null,
+              slug: null,
+              data: {
+                group_id: 33,
+                group_name: "grouperss",
+                username: "ossaama",
+              },
+            })
+          );
+        },
+
+        async test(assert) {
+          const link = query("li a");
+          assert.ok(link.href.endsWith("/u/ossaama/messages/grouperss"));
+        },
+      }
+    );
+
+    componentTest("the item's link has a title for accessibility", {
+      template,
+
+      beforeEach() {
+        this.set("notification", getNotification());
+      },
+
+      async test(assert) {
+        const link = query("li a");
+        assert.strictEqual(
+          link.title,
+          I18n.t("notifications.titles.mentioned")
+        );
+      },
     });
 
-    test("pushes is-warning to the classList if the notification originates from a warning PM", async function (assert) {
-      this.set("notification", getNotification({ is_warning: true }));
-      await render(template);
-      assert.ok(exists("li.is-warning"));
+    componentTest("has elements for label and description", {
+      template,
+
+      beforeEach() {
+        this.set("notification", getNotification());
+      },
+
+      async test(assert) {
+        const label = query("li a .notification-label");
+        const description = query("li a .notification-description");
+
+        assert.strictEqual(
+          label.textContent.trim(),
+          "osama",
+          "the label's content is the username by default"
+        );
+
+        assert.strictEqual(
+          description.textContent.trim(),
+          "This is fancy title <a>!",
+          "the description defaults to the fancy_title"
+        );
+      },
     });
 
-    test("doesn't push is-warning to the classList if the notification doesn't originate from a warning PM", async function (assert) {
-      this.set("notification", getNotification());
-      await render(template);
-      assert.ok(!exists("li.is-warning"));
-      assert.ok(exists("li"));
+    componentTest(
+      "the description falls back to topic_title from data if fancy_title is absent",
+      {
+        template,
+
+        beforeEach() {
+          this.set(
+            "notification",
+            getNotification({
+              fancy_title: null,
+            })
+          );
+        },
+
+        async test(assert) {
+          const description = query("li a .notification-description");
+
+          assert.strictEqual(
+            description.textContent.trim(),
+            "this is title before it becomes fancy <a>!",
+            "topic_title from data is rendered safely"
+          );
+        },
+      }
+    );
+
+    componentTest("fancy_title can be decorated via the plugin API", {
+      template,
+
+      beforeEach() {
+        withPluginApi("0.1", (api) => {
+          api.registerUserMenuTopicTitleDecorator((fancy_title) => {
+            return fancy_title.replaceAll("fancy", "ycnaf");
+          });
+          api.registerUserMenuTopicTitleDecorator((fancy_title) => {
+            return fancy_title.replaceAll("title", "eltit");
+          });
+        });
+        this.set("notification", getNotification());
+      },
+
+      async test(assert) {
+        const description = query("li a .notification-description");
+
+        assert.strictEqual(
+          description.textContent.trim(),
+          "This is ycnaf eltit <a>!",
+          "fancy_title decorators registered via plugin API are applied"
+        );
+      },
     });
 
-    test("the item's href links to the topic that the notification originates from", async function (assert) {
-      this.set("notification", getNotification());
-      await render(template);
-      const link = query("li a");
-      assert.ok(link.href.endsWith("/t/this-is-fancy-title/449/113"));
+    componentTest("fancy_title is emoji-unescaped", {
+      template,
+
+      beforeEach() {
+        this.set(
+          "notification",
+          getNotification({
+            fancy_title: "title with emoji :phone:",
+          })
+        );
+      },
+
+      async test(assert) {
+        assert.ok(
+          exists("li a .notification-description img.emoji"),
+          "emojis are unescaped when fancy_title is used for description"
+        );
+      },
     });
 
-    test("the item's href links to the group messages if the notification is for a group messages", async function (assert) {
-      this.set(
-        "notification",
-        getNotification({
-          topic_id: null,
-          post_number: null,
-          slug: null,
-          data: {
-            group_id: 33,
-            group_name: "grouperss",
-            username: "ossaama",
-          },
-        })
-      );
-      await render(template);
-      const link = query("li a");
-      assert.ok(link.href.endsWith("/u/ossaama/messages/grouperss"));
-    });
+    componentTest("topic_title from data is not emoji-unescaped", {
+      template,
 
-    test("the item's link has a title for accessibility", async function (assert) {
-      this.set("notification", getNotification());
-      await render(template);
-      const link = query("li a");
-      assert.strictEqual(link.title, I18n.t("notifications.titles.mentioned"));
-    });
+      beforeEach() {
+        this.set(
+          "notification",
+          getNotification({
+            fancy_title: null,
+            data: {
+              topic_title: "unsafe title with unescaped emoji :phone:",
+            },
+          })
+        );
+      },
 
-    test("has elements for label and description", async function (assert) {
-      this.set("notification", getNotification());
-      await render(template);
-      const label = query("li a .notification-label");
-      const description = query("li a .notification-description");
+      async test(assert) {
+        const description = query("li a .notification-description");
 
-      assert.strictEqual(
-        label.textContent.trim(),
-        "osama",
-        "the label's content is the username by default"
-      );
-
-      assert.strictEqual(
-        description.textContent.trim(),
-        "This is fancy title <a>!",
-        "the description defaults to the fancy_title"
-      );
-    });
-
-    test("the description falls back to topic_title from data if fancy_title is absent", async function (assert) {
-      this.set(
-        "notification",
-        getNotification({
-          fancy_title: null,
-        })
-      );
-      await render(template);
-      const description = query("li a .notification-description");
-
-      assert.strictEqual(
-        description.textContent.trim(),
-        "this is title before it becomes fancy <a>!",
-        "topic_title from data is rendered safely"
-      );
-    });
-
-    test("fancy_title is emoji-unescaped", async function (assert) {
-      this.set(
-        "notification",
-        getNotification({
-          fancy_title: "title with emoji :phone:",
-        })
-      );
-      await render(template);
-      assert.ok(
-        exists("li a .notification-description img.emoji"),
-        "emojis are unescaped when fancy_title is used for description"
-      );
-    });
-
-    test("topic_title from data is not emoji-unescaped", async function (assert) {
-      this.set(
-        "notification",
-        getNotification({
-          fancy_title: null,
-          data: {
-            topic_title: "unsafe title with unescaped emoji :phone:",
-          },
-        })
-      );
-      await render(template);
-      const description = query("li a .notification-description");
-
-      assert.strictEqual(
-        description.textContent.trim(),
-        "unsafe title with unescaped emoji :phone:",
-        "emojis aren't unescaped when topic title is not safe"
-      );
-      assert.ok(!query("img"), "no <img> exists");
+        assert.strictEqual(
+          description.textContent.trim(),
+          "unsafe title with unescaped emoji :phone:",
+          "emojis aren't unescaped when topic title is not safe"
+        );
+        assert.ok(!query("img"), "no <img> exists");
+      },
     });
   }
 );
