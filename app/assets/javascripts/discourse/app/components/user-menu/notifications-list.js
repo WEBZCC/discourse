@@ -1,6 +1,19 @@
 import UserMenuItemsList from "discourse/components/user-menu/items-list";
 import I18n from "I18n";
 import { action } from "@ember/object";
+import { ajax } from "discourse/lib/ajax";
+import { postRNWebviewMessage } from "discourse/lib/utilities";
+import showModal from "discourse/lib/show-modal";
+import { allSettled } from "rsvp";
+
+let _processors = [];
+export function addUserMenuNotificationsProcessor(proc) {
+  _processors.push(proc);
+}
+
+export function resetUserMenuNotificationsProcessors() {
+  _processors = [];
+}
 
 export default class UserMenuNotificationsList extends UserMenuItemsList {
   get filterByTypes() {
@@ -59,16 +72,46 @@ export default class UserMenuNotificationsList extends UserMenuItemsList {
     return this.store
       .findStale("notification", params)
       .refresh()
-      .then((c) => c.content);
+      .then((c) => {
+        return allSettled(
+          _processors.map((proc) => {
+            return proc(c.content);
+          })
+        ).then(() => c.content);
+      });
   }
 
   dismissWarningModal() {
-    // TODO: add warning modal when there are unread high pri notifications
-    return null;
+    if (this.currentUser.unread_high_priority_notifications > 0) {
+      const modalController = showModal("dismiss-notification-confirmation");
+      modalController.set(
+        "confirmationMessage",
+        I18n.t("notifications.dismiss_confirmation.body.default", {
+          count: this.currentUser.unread_high_priority_notifications,
+        })
+      );
+      return modalController;
+    }
   }
 
   @action
   dismissButtonClick() {
-    // TODO
+    const opts = { type: "PUT" };
+    const dismissTypes = this.filterByTypes?.toString();
+    if (dismissTypes) {
+      opts.data = { dismiss_types: dismissTypes };
+    }
+    const modalController = this.dismissWarningModal();
+    const modalCallback = () => {
+      ajax("/notifications/mark-read", opts).then(() => {
+        this.refreshList();
+        postRNWebviewMessage("markRead", "1");
+      });
+    };
+    if (modalController) {
+      modalController.set("dismissNotifications", modalCallback);
+    } else {
+      modalCallback();
+    }
   }
 }
