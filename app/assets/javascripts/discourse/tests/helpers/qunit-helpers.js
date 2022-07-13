@@ -71,6 +71,10 @@ import {
 } from "discourse/lib/to-markdown";
 import { clearTagsHtmlCallbacks } from "discourse/lib/render-tags";
 import { clearToolbarCallbacks } from "discourse/components/d-editor";
+import { resetUserMenuNotificationsProcessors } from "discourse/components/user-menu/notifications-list";
+import { resetUserMenuTopicTitleDecorators } from "discourse/components/user-menu/notification-item";
+import { resetUserMenuCustomComponents } from "discourse/models/notification";
+import { resetUserMenuTabs } from "discourse/components/user-menu/menu";
 
 export function currentUser() {
   return User.create(sessionFixtures["/session/current.json"].current_user);
@@ -197,6 +201,10 @@ export function testCleanup(container, app) {
   clearLegacyResolverOptions();
   clearTagsHtmlCallbacks();
   clearToolbarCallbacks();
+  resetUserMenuTopicTitleDecorators();
+  resetUserMenuNotificationsProcessors();
+  resetUserMenuCustomComponents();
+  resetUserMenuTabs();
 }
 
 export function discourseModule(name, options) {
