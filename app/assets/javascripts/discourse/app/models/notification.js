@@ -2,7 +2,7 @@ import RestModel from "discourse/models/rest";
 import { tracked } from "@glimmer/tracking";
 
 const DEFAULT_ITEM = "user-menu/notification-item";
-const _componentForType = {};
+let _componentForType = {};
 
 function defaultComponentForType() {
   return {
