@@ -4,7 +4,7 @@ import I18n from "I18n";
 
 export default class UserMenuInviteeAcceptedNotificationItem extends UserMenuNotificationItem {
   get url() {
-    return userPath(this.data.display_username);
+    return userPath(this.notification.data.display_username);
   }
 
   get description() {

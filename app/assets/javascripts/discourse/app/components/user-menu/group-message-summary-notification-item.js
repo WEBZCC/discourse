@@ -3,13 +3,13 @@ import I18n from "I18n";
 
 export default class UserMenuGroupMessageSummaryNotificationItem extends UserMenuNotificationItem {
   get inboxCount() {
-    return this.data.inbox_count;
+    return this.notification.data.inbox_count;
   }
 
   get label() {
     return I18n.t("notifications.group_message_summary", {
       count: this.inboxCount,
-      group_name: this.data.group_name,
+      group_name: this.notification.data.group_name,
     });
   }
 

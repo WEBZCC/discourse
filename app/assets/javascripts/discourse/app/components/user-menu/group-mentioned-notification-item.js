@@ -2,7 +2,7 @@ import UserMenuNotificationItem from "discourse/components/user-menu/notificatio
 
 export default class UserMenuGroupMentionedNotificationItem extends UserMenuNotificationItem {
   get label() {
-    return `${this.username} @${this.data.group_name}`;
+    return `${this.username} @${this.notification.data.group_name}`;
   }
 
   get labelWrapperClasses() {

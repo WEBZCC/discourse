@@ -11,8 +11,8 @@ export default class UserMenuMembershipRequestConsolidatedNotificationItem exten
 
   get label() {
     return I18n.t("notifications.membership_request_consolidated", {
-      group_name: this.data.group_name,
-      count: this.data.count,
+      group_name: this.notification.data.group_name,
+      count: this.notification.data.count,
     });
   }
 

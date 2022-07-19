@@ -4,12 +4,12 @@ import I18n from "I18n";
 
 export default class UserMenuMembershipRequestAcceptedNotificationItem extends UserMenuNotificationItem {
   get url() {
-    return groupPath(this.data.group_name);
+    return groupPath(this.notification.data.group_name);
   }
 
   get label() {
     return I18n.t("notifications.membership_request_accepted", {
-      group_name: this.data.group_name,
+      group_name: this.notification.data.group_name,
     });
   }
 

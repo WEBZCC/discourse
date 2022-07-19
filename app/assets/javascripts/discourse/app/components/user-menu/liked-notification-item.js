@@ -4,11 +4,11 @@ import I18n from "I18n";
 
 export default class UserMenuLikedNotificationItem extends UserMenuNotificationItem {
   get count() {
-    return this.data.count;
+    return this.notification.data.count;
   }
 
   get username2() {
-    return formatUsername(this.data.username2);
+    return formatUsername(this.notification.data.username2);
   }
 
   get label() {

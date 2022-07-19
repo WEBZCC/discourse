@@ -7,13 +7,15 @@ export default class UserMenuLikedConsolidatedNotificationItem extends UserMenuN
     return userPath(
       `${
         this.notification.username || this.currentUser.username
-      }/notifications/likes-received?acting_username=${this.data.username}`
+      }/notifications/likes-received?acting_username=${
+        this.notification.data.username
+      }`
     );
   }
 
   get description() {
     return I18n.t("notifications.liked_consolidated_description", {
-      count: this.data.count,
+      count: this.notification.data.count,
     });
   }
 
