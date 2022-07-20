@@ -10,8 +10,4 @@ export default class UserMenuInviteeAcceptedNotificationItem extends UserMenuNot
   get description() {
     return I18n.t("notifications.invitee_accepted_your_invitation");
   }
-
-  get descriptionHtmlSafe() {
-    return false;
-  }
 }

@@ -18,8 +18,4 @@ export default class UserMenuLikedConsolidatedNotificationItem extends UserMenuN
       count: this.notification.data.count,
     });
   }
-
-  get descriptionHtmlSafe() {
-    return false;
-  }
 }

@@ -10,8 +10,4 @@ export default class UserMenuReviewableUserItem extends UserMenuDefaultReviewabl
   get icon() {
     return "user";
   }
-
-  get descriptionHtmlSafe() {
-    return false;
-  }
 }

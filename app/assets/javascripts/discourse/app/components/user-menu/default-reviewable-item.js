@@ -17,10 +17,6 @@ export default class UserMenuReviewableItem extends GlimmerComponent {
     });
   }
 
-  get descriptionHtmlSafe() {
-    return false;
-  }
-
   get icon() {
     return "flag";
   }

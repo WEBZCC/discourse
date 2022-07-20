@@ -75,21 +75,16 @@ export default class UserMenuNotificationItem extends GlimmerComponent {
   }
 
   get description() {
-    const description =
-      this._decoratedTopicTitle || this.notification.data.topic_title;
+    const decoratedTitle = this._decoratedTopicTitle();
 
-    if (this.descriptionHtmlSafe) {
-      return htmlSafe(description);
+    if (decoratedTitle) {
+      return htmlSafe(decoratedTitle);
     } else {
-      return description;
+      return this.notification.data.topic_title;
     }
   }
 
   get descriptionElementClasses() {}
-
-  get descriptionHtmlSafe() {
-    return !!this.notification.fancy_title;
-  }
 
   // the following props are helper props -- they're never referenced directly in the hbs template
   get notification() {
@@ -104,7 +99,7 @@ export default class UserMenuNotificationItem extends GlimmerComponent {
     return this.site.notificationLookup[this.notification.notification_type];
   }
 
-  get _decoratedTopicTitle() {
+  _decoratedTopicTitle() {
     let title = emojiUnescape(this.notification.fancy_title);
     if (title) {
       _decorators.forEach((dec) => {
