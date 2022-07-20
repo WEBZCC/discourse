@@ -5,9 +5,6 @@ import { count, exists, query } from "discourse/tests/helpers/qunit-helpers";
 import pretender from "discourse/tests/helpers/create-pretender";
 import { hbs } from "ember-cli-htmlbars";
 
-const LEFT_ARROW = 37;
-const RIGHT_ARROW = 39;
-
 module("Integration | Component | site-header", function (hooks) {
   setupRenderingTest(hooks);
 
@@ -128,28 +125,28 @@ module("Integration | Component | site-header", function (hooks) {
     let activeTab = query(".menu-tabs-container .btn.active");
     assert.strictEqual(activeTab.id, "user-menu-button-all-notifications");
 
-    await triggerKeyEvent(document, "keydown", RIGHT_ARROW);
+    await triggerKeyEvent(document, "keydown", "ArrowDown");
     let focusedTab = document.activeElement;
     assert.strictEqual(
       focusedTab.id,
       "user-menu-button-replies",
-      "pressing the right arrow key moves focus to the next tab towards the bottom"
+      "pressing the down arrow key moves focus to the next tab towards the bottom"
     );
 
-    await triggerKeyEvent(document, "keydown", RIGHT_ARROW);
-    await triggerKeyEvent(document, "keydown", RIGHT_ARROW);
-    await triggerKeyEvent(document, "keydown", RIGHT_ARROW);
-    await triggerKeyEvent(document, "keydown", RIGHT_ARROW);
-    await triggerKeyEvent(document, "keydown", RIGHT_ARROW);
-    await triggerKeyEvent(document, "keydown", RIGHT_ARROW);
+    await triggerKeyEvent(document, "keydown", "ArrowDown");
+    await triggerKeyEvent(document, "keydown", "ArrowDown");
+    await triggerKeyEvent(document, "keydown", "ArrowDown");
+    await triggerKeyEvent(document, "keydown", "ArrowDown");
+    await triggerKeyEvent(document, "keydown", "ArrowDown");
+    await triggerKeyEvent(document, "keydown", "ArrowDown");
 
     focusedTab = document.activeElement;
     assert.ok(
       focusedTab.href.endsWith("/u/eviltrout/preferences"),
-      "the right arrow key can move the focus to the bottom tabs"
+      "the down arrow key can move the focus to the bottom tabs"
     );
 
-    await triggerKeyEvent(document, "keydown", RIGHT_ARROW);
+    await triggerKeyEvent(document, "keydown", "ArrowDown");
     focusedTab = document.activeElement;
     assert.strictEqual(
       focusedTab.id,
@@ -157,11 +154,11 @@ module("Integration | Component | site-header", function (hooks) {
       "the focus moves back to the top after reaching the bottom"
     );
 
-    await triggerKeyEvent(document, "keydown", LEFT_ARROW);
+    await triggerKeyEvent(document, "keydown", "ArrowUp");
     focusedTab = document.activeElement;
     assert.ok(
       focusedTab.href.endsWith("/u/eviltrout/preferences"),
-      "the left arrow key moves the focus in the opposite direction"
+      "the up arrow key moves the focus in the opposite direction"
     );
   });
 });
