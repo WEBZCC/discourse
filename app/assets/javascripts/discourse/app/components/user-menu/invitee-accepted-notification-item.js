@@ -3,7 +3,7 @@ import { userPath } from "discourse/lib/url";
 import I18n from "I18n";
 
 export default class UserMenuInviteeAcceptedNotificationItem extends UserMenuNotificationItem {
-  get url() {
+  get linkHref() {
     return userPath(this.notification.data.display_username);
   }
 

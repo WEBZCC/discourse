@@ -48,7 +48,8 @@ module(
           group_name: "drummers",
         })
       );
-      assert.ok(!exists("li span"));
+      assert.ok(!exists("li .notification-label"));
+      assert.ok(!exists("li .notification-description"));
     });
   }
 );

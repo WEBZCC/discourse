@@ -3,7 +3,7 @@ import { groupPath } from "discourse/lib/url";
 import I18n from "I18n";
 
 export default class UserMenuMembershipRequestAcceptedNotificationItem extends UserMenuNotificationItem {
-  get url() {
+  get linkHref() {
     return groupPath(this.notification.data.group_name);
   }
 

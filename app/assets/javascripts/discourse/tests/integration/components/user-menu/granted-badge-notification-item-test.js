@@ -56,8 +56,8 @@ module(
         }),
         "label is rendered safely"
       );
-      assert.ok(!exists("li span"));
-      assert.strictEqual(div.childElementCount, 0);
+      assert.ok(!exists("li span.notification-label"));
+      assert.ok(!exists("li span.notification-description"));
     });
   }
 );

@@ -55,9 +55,8 @@ module(
         "osama, shrek",
         "the label displays both usernames comma-concatenated"
       );
-      assert.strictEqual(
-        label.className,
-        "double-user",
+      assert.ok(
+        label.classList.contains("double-user"),
         "label has double-user class"
       );
       assert.strictEqual(
@@ -84,9 +83,8 @@ module(
         }),
         "the label displays the first 2 usernames comma-concatenated with the count of remaining users"
       );
-      assert.strictEqual(
-        label.className,
-        "multi-user",
+      assert.ok(
+        label.classList.contains("multi-user"),
         "label has multi-user class"
       );
       assert.strictEqual(

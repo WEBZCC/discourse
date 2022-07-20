@@ -3,7 +3,7 @@ import getURL from "discourse-common/lib/get-url";
 import I18n from "I18n";
 
 export default class UserMenuGrantedBadgeNotificationItem extends UserMenuNotificationItem {
-  get url() {
+  get linkHref() {
     const badgeId = this.notification.data.badge_id;
     if (badgeId) {
       let slug = this.notification.data.badge_slug;
