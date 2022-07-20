@@ -74,7 +74,7 @@ import { clearToolbarCallbacks } from "discourse/components/d-editor";
 import { resetUserMenuNotificationsProcessors } from "discourse/components/user-menu/notifications-list";
 import { resetUserMenuTopicTitleDecorators } from "discourse/components/user-menu/notification-item";
 import { resetUserMenuCustomComponents } from "discourse/models/notification";
-import { resetUserMenuTabs } from "discourse/components/user-menu/menu";
+import { resetUserMenuTabs } from "discourse/lib/user-menu/tab";
 
 export function currentUser() {
   return User.create(sessionFixtures["/session/current.json"].current_user);

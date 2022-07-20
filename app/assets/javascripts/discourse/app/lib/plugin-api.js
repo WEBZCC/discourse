@@ -96,7 +96,7 @@ import { downloadCalendar } from "discourse/lib/download-calendar";
 import { consolePrefix } from "discourse/lib/source-identifier";
 import { addSectionLink } from "discourse/lib/sidebar/custom-topics-section-links";
 import { addSidebarSection } from "discourse/lib/sidebar/custom-sections";
-import { registerUserMenuTab } from "discourse/components/user-menu/menu";
+import { registerUserMenuTab } from "discourse/lib/user-menu/tab";
 import { addUserMenuNotificationsProcessor } from "discourse/components/user-menu/notifications-list";
 import { registerUserMenuTopicTitleDecorator } from "discourse/components/user-menu/notification-item";
 import { registerUserMenuComponentForNotificationType } from "discourse/models/notification";

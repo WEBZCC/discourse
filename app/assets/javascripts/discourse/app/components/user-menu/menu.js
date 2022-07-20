@@ -3,37 +3,149 @@ import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
 import { LIKE_NOTIFICATION_FREQUENCY_TYPE } from "discourse/models/user";
 import { WITH_REMINDER_ICON } from "discourse/models/bookmark";
-import { consolePrefix } from "discourse/lib/source-identifier";
+import UserMenuTab, { customTabsClasses } from "discourse/lib/user-menu/tab";
 
 const DEFAULT_TAB_ID = "all-notifications";
 const DEFAULT_PANEL_COMPONENT = "user-menu/notifications-list";
 
 const REVIEW_QUEUE_TAB_ID = "review-queue";
 
-let _customTabs = [];
+const coreTopTabs = [
+  class extends UserMenuTab {
+    get id() {
+      return DEFAULT_TAB_ID;
+    }
 
-export function registerUserMenuTab(config) {
-  let valid = true;
-  ["id", "icon", "panelComponent"].forEach((attr) => {
-    if (!config[attr]) {
-      valid = false;
-      // eslint-disable-next-line no-console
-      console.error(
-        consolePrefix(),
-        `the \`registerUserMenuTab\` API requires an object with \`${attr}\` attribute, but there is no such attribute for the following tab:`,
-        config
+    get icon() {
+      return "bell";
+    }
+
+    get panelComponent() {
+      return DEFAULT_PANEL_COMPONENT;
+    }
+  },
+
+  class extends UserMenuTab {
+    get id() {
+      return "replies";
+    }
+
+    get icon() {
+      return "reply";
+    }
+
+    get panelComponent() {
+      return "user-menu/replies-notifications-list";
+    }
+  },
+
+  class extends UserMenuTab {
+    get id() {
+      return "mentions";
+    }
+
+    get icon() {
+      return "at";
+    }
+
+    get panelComponent() {
+      return "user-menu/mentions-notifications-list";
+    }
+  },
+
+  class extends UserMenuTab {
+    get id() {
+      return "likes";
+    }
+
+    get icon() {
+      return "heart";
+    }
+
+    get panelComponent() {
+      return "user-menu/likes-notifications-list";
+    }
+
+    get shouldDisplay() {
+      return (
+        this.currentUser.like_notification_frequency !==
+        LIKE_NOTIFICATION_FREQUENCY_TYPE.never
       );
     }
-  });
-  if (!valid) {
-    return;
-  }
-  _customTabs.push(config);
-}
+  },
 
-export function resetUserMenuTabs() {
-  _customTabs = [];
-}
+  class extends UserMenuTab {
+    get id() {
+      return "pms";
+    }
+
+    get icon() {
+      return "far-envelope";
+    }
+
+    get panelComponent() {
+      return "user-menu/pms-notifications-list";
+    }
+
+    get count() {
+      return this.getUnreadCountForType("private_message");
+    }
+  },
+
+  class extends UserMenuTab {
+    get id() {
+      return "bookmarks";
+    }
+
+    get icon() {
+      return WITH_REMINDER_ICON;
+    }
+
+    get panelComponent() {
+      return "user-menu/bookmarks-notifications-list";
+    }
+
+    get count() {
+      return this.getUnreadCountForType("bookmark_reminder");
+    }
+  },
+
+  class extends UserMenuTab {
+    get id() {
+      return "badges";
+    }
+
+    get icon() {
+      return "certificate";
+    }
+
+    get panelComponent() {
+      return "user-menu/badges-notifications-list";
+    }
+  },
+
+  class extends UserMenuTab {
+    get id() {
+      return REVIEW_QUEUE_TAB_ID;
+    }
+
+    get icon() {
+      return "flag";
+    }
+
+    get panelComponent() {
+      return "user-menu/reviewables-list";
+    }
+
+    get shouldDisplay() {
+      return this.currentUser.can_review;
+    }
+
+    get count() {
+      return this.currentUser.get("reviewable_count");
+    }
+  },
+];
 
 export default class UserMenu extends GlimmerComponent {
   @tracked currentTabId = DEFAULT_TAB_ID;
@@ -46,31 +158,25 @@ export default class UserMenu extends GlimmerComponent {
   }
 
   get _topTabs() {
-    const tabs = this._coreTopTabs;
-    const reviewQueueTabIndex = tabs.findIndex(
+    const tabs = [];
+    coreTopTabs.forEach((tabClass) => {
+      const tab = new tabClass(this.currentUser, this.siteSettings, this.site);
+      if (tab.shouldDisplay) {
+        tabs.push(tab);
+      }
+    });
+    let reviewQueueTabIndex = tabs.findIndex(
       (tab) => tab.id === REVIEW_QUEUE_TAB_ID
     );
-    _customTabs.forEach((config) => {
-      if (
-        !config.shouldDisplay ||
-        config.shouldDisplay(this.currentUser, this.siteSettings, this.site)
-      ) {
-        const tab = {
-          id: config.id,
-          icon: config.icon,
-          panelComponent: config.panelComponent,
-        };
-        if (config.notificationTypesForCount) {
-          tab.count = 0;
-          config.notificationTypesForCount.forEach((type) => {
-            tab.count += this._getUnreadCountForType(type);
-          });
-        }
+    customTabsClasses.forEach((tabClass) => {
+      const tab = new tabClass(this.currentUser, this.siteSettings, this.site);
+      if (tab.shouldDisplay) {
         // ensure the review queue tab is always last
         if (reviewQueueTabIndex === -1) {
           tabs.push(tab);
         } else {
-          tabs.insertAt(tabs.length - 1, tab);
+          tabs.insertAt(reviewQueueTabIndex, tab);
+          reviewQueueTabIndex++;
         }
       }
     });
@@ -86,70 +192,6 @@ export default class UserMenu extends GlimmerComponent {
       tab.position = index + topTabsLength;
       return tab;
     });
-  }
-
-  get _coreTopTabs() {
-    const list = [
-      {
-        id: DEFAULT_TAB_ID,
-        icon: "bell",
-        panelComponent: DEFAULT_PANEL_COMPONENT,
-      },
-      {
-        id: "replies",
-        icon: "reply",
-        panelComponent: "user-menu/replies-notifications-list",
-      },
-      {
-        id: "mentions",
-        icon: "at",
-        panelComponent: "user-menu/mentions-notifications-list",
-      },
-    ];
-
-    if (
-      this.currentUser.like_notification_frequency !==
-      LIKE_NOTIFICATION_FREQUENCY_TYPE.never
-    ) {
-      list.push({
-        id: "likes",
-        icon: "heart",
-        panelComponent: "user-menu/likes-notifications-list",
-      });
-    }
-
-    list.push(
-      {
-        id: "pms",
-        icon: "far-envelope",
-        panelComponent: "user-menu/pms-notifications-list",
-        count: this._getUnreadCountForType("private_message"),
-      },
-      {
-        id: "bookmarks",
-        icon: WITH_REMINDER_ICON,
-        panelComponent: "user-menu/bookmarks-notifications-list",
-        count: this._getUnreadCountForType("bookmark_reminder"),
-      },
-      {
-        id: "badges",
-        icon: "certificate",
-        panelComponent: "user-menu/badges-notifications-list",
-      }
-    );
-
-    if (this.currentUser.can_review) {
-      list.push({
-        id: REVIEW_QUEUE_TAB_ID,
-        icon: "flag",
-        panelComponent: "user-menu/reviewables-list",
-        // we're retrieving the value with get() so that Ember tracks the property
-        // and re-renders the UI when it changes
-        count: this.currentUser.get("reviewable_count"),
-      });
-    }
-
-    return list;
   }
 
   get _coreBottomTabs() {
