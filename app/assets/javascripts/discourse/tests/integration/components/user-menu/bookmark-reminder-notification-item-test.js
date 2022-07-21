@@ -85,7 +85,7 @@ module(
         })
       );
       await render(template);
-      const description = query("li span:nth-of-type(2)");
+      const description = query("li .notification-description");
       assert.strictEqual(
         description.textContent.trim(),
         "this is unsafe bookmark title <a>!",
@@ -96,7 +96,7 @@ module(
     test("when the bookmark reminder originates from a topic", async function (assert) {
       this.set("notification", getNotification());
       await render(template);
-      const description = query("li span:nth-of-type(2)");
+      const description = query("li .notification-description");
       assert.strictEqual(
         description.textContent.trim(),
         "This is fancy title <a>!",

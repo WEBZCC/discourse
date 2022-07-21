@@ -1,6 +1,6 @@
 import { module, test } from "qunit";
 import { setupRenderingTest } from "discourse/tests/helpers/component-test";
-import { queryAll } from "discourse/tests/helpers/qunit-helpers";
+import { query } from "discourse/tests/helpers/qunit-helpers";
 import { render } from "@ember/test-helpers";
 import { deepMerge } from "discourse-common/lib/object";
 import { NOTIFICATION_TYPES } from "discourse/tests/fixtures/concerns/notification-types";
@@ -45,11 +45,9 @@ module(
     test("when the likes count is 2", async function (assert) {
       this.set("notification", getNotification({ data: { count: 2 } }));
       await render(template);
-      const spans = queryAll("li span");
-      assert.strictEqual(spans.length, 2);
 
-      const label = spans[0];
-      const description = spans[1];
+      const label = query("li .notification-label");
+      const description = query("li .notification-description");
       assert.strictEqual(
         label.textContent.trim(),
         "osama, shrek",
@@ -69,11 +67,9 @@ module(
     test("when the likes count is more than 2", async function (assert) {
       this.set("notification", getNotification({ data: { count: 3 } }));
       await render(template);
-      const spans = queryAll("li span");
-      assert.strictEqual(spans.length, 2);
 
-      const label = spans[0];
-      const description = spans[1];
+      const label = query("li .notification-label");
+      const description = query("li .notification-description");
       assert.strictEqual(
         label.textContent.trim(),
         I18n.t("notifications.liked_by_multiple_users", {
@@ -100,11 +96,9 @@ module(
         getNotification({ data: { count: 1, username2: null } })
       );
       await render(template);
-      const spans = queryAll("li span");
-      assert.strictEqual(spans.length, 2);
 
-      const label = spans[0];
-      const description = spans[1];
+      const label = query("li .notification-label");
+      const description = query("li .notification-description");
       assert.strictEqual(
         label.textContent.trim(),
         "osama",

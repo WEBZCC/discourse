@@ -45,7 +45,7 @@ module(
       assert.ok(link.href.endsWith("/badges/12/tough-guy?username=ossa"));
     });
 
-    test("the label is not wrapped by a span and there's no description", async function (assert) {
+    test("the notification's only content is a i18n string", async function (assert) {
       this.set("notification", getNotification());
       await render(template);
       const div = query("li div");
@@ -56,8 +56,8 @@ module(
         }),
         "label is rendered safely"
       );
-      assert.ok(!exists("li span.notification-label"));
-      assert.ok(!exists("li span.notification-description"));
+      assert.ok(!exists("li .notification-label"));
+      assert.ok(!exists("li .notification-description"));
     });
   }
 );

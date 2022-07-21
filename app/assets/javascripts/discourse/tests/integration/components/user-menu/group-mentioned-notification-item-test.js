@@ -46,7 +46,7 @@ module(
     test("notification label displays the user who mentioned and the mentioned group", async function (assert) {
       this.set("notification", getNotification());
       await render(template);
-      const label = query("li span");
+      const label = query("li .notification-label");
       assert.strictEqual(label.textContent.trim(), "osama @hikers");
       assert.ok(
         label.classList.contains("mention-group"),
@@ -58,7 +58,7 @@ module(
     test("notification description displays the topic title", async function (assert) {
       this.set("notification", getNotification());
       await render(template);
-      const description = query("li span:nth-of-type(2)");
+      const description = query("li .notification-description");
       assert.strictEqual(
         description.textContent.trim(),
         "This is fancy title <a>!"

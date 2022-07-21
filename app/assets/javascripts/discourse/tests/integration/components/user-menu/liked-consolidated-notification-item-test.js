@@ -54,14 +54,14 @@ module(
     test("the notification label displays the user who liked", async function (assert) {
       this.set("notification", getNotification());
       await render(template);
-      const label = query("li span");
+      const label = query("li .notification-label");
       assert.strictEqual(label.textContent.trim(), "liker439");
     });
 
     test("the notification description displays the number of likes", async function (assert) {
       this.set("notification", getNotification());
       await render(template);
-      const description = query("li span:nth-of-type(2)");
+      const description = query("li .notification-description");
       assert.strictEqual(
         description.textContent.trim(),
         I18n.t("notifications.liked_consolidated_description", { count: 44 })

@@ -1,6 +1,6 @@
 import { module, test } from "qunit";
 import { setupRenderingTest } from "discourse/tests/helpers/component-test";
-import { exists, query, queryAll } from "discourse/tests/helpers/qunit-helpers";
+import { exists, query } from "discourse/tests/helpers/qunit-helpers";
 import { MiniReviewable } from "discourse/models/reviewable";
 import { render } from "@ember/test-helpers";
 import { hbs } from "ember-cli-htmlbars";
@@ -42,25 +42,25 @@ module(
       assert.ok(exists("li.reviewed"));
     });
 
-    test("has 2 spans: one for label and one for description", async function (assert) {
+    test("has elements for label and description", async function (assert) {
       this.set("item", getReviewable());
       await render(template);
-      const spans = queryAll("li span");
-      assert.strictEqual(spans.length, 2);
 
+      const label = query("li .reviewable-label");
+      const description = query("li .reviewable-description");
       assert.strictEqual(
-        spans[0].textContent.trim(),
+        label.textContent.trim(),
         "sayo2",
         "the label contains flagger_username"
       );
 
       assert.strictEqual(
-        spans[0].textContent.trim(),
+        label.textContent.trim(),
         "sayo2",
         "the label is the flagger_username"
       );
       assert.strictEqual(
-        spans[1].textContent.trim(),
+        description.textContent.trim(),
         I18n.t("user_menu.reviewable.default_item", {
           reviewable_id: this.item.id,
         }),
@@ -71,7 +71,7 @@ module(
     test("the item's label is an I18n string if flagger_username is absent", async function (assert) {
       this.set("item", getReviewable({ flagger_username: null }));
       await render(template);
-      const label = query("li span");
+      const label = query("li .reviewable-label");
       assert.strictEqual(
         label.textContent.trim(),
         I18n.t("user_menu.reviewable.deleted_user")
